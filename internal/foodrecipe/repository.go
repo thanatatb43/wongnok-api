@@ -18,7 +18,8 @@ func NewRepository(db *gorm.DB) Repository {
 	}
 }
 
-func (repo Repository) Create(recipe model.FoodRecipe) error {
+// รับ pointer ของ model.FoodRecipe เพื่อให้สามารถแก้ไขค่า ID และ timestamps ได้
+func (repo Repository) Create(recipe *model.FoodRecipe) error {
 	// ทำการบันทึกข้อมูล recipe ลงในฐานข้อมูล
 	return repo.DB.Create(recipe).Error
 }

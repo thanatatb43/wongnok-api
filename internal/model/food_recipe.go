@@ -19,7 +19,7 @@ type FoodRecipe struct {
 	CookingDuration   CookingDuration `gorm:"foreignKey:CookingDurationID"`
 }
 
-// ตัวแปลงค่าจาก model.FoodRecipe เป็นรูปแบบที่ต้องการส่งกลับไปยัง client
+// ตัวแปลงค่าจาก model.FoodRecipe ส่งค่าจาก client มาเป็น struct FoodRecipe
 func (recipe FoodRecipe) FromRequest(request dto.FoodRecipeCreateRequest) FoodRecipe {
 	// mapping ค่าจาก request ไปยัง struct FoodRecipe
 	return FoodRecipe{
@@ -30,5 +30,19 @@ func (recipe FoodRecipe) FromRequest(request dto.FoodRecipeCreateRequest) FoodRe
 		ImageURL:          &request.ImageURL,
 		DifficultyID:      request.DifficultyID,
 		CookingDurationID: request.CookingDurationID,
+	}
+}
+
+// ตัวแปลงค่าจาก model.FoodRecipe เป็นรูปแบบที่ต้องการส่งกลับไปยัง client
+func (recipe FoodRecipe) ToResponse() dto.FoodRecipeResponse {
+	return dto.FoodRecipeResponse{
+		ID:           recipe.ID,
+		Name:         recipe.Name,
+		Description:  recipe.Description,
+		Ingredients:  recipe.Ingredients,
+		Instructions: recipe.Instructions,
+		ImageURL:     recipe.ImageURL,
+		CreatedAt:    recipe.CreatedAt,
+		UpdatedAt:    recipe.UpdatedAt,
 	}
 }

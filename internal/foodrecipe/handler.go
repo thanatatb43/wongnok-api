@@ -79,5 +79,5 @@ func (handler Handler) Create(ctx *gin.Context) {
 	}
 
 	// ส่งข้อมูล recipe ที่ถูกสร้างขึ้นกลับไปยัง client
-	ctx.JSON(http.StatusCreated, recipe)
+	ctx.JSON(http.StatusCreated, recipe.ToResponse())
 }
