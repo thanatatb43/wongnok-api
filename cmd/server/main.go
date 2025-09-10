@@ -11,5 +11,12 @@ func main() {
 
 	foodrecipeHandler := foodrecipe.NewHandler()
 
-	router.GET("/food-recipes", foodrecipeHandler.Get)
+	// ประกาศ group สำหรับ version 1
+	groupV1 := router.Group("/api/v1")
+
+	groupV1.GET("/food-recipes", foodrecipeHandler.Get)
+	groupV1.GET("/food-recipes/:id", foodrecipeHandler.GetByID)
+	groupV1.POST("/food-recipes", foodrecipeHandler.Create)
+
+	router.Run(":8080")
 }
