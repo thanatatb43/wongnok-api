@@ -4,16 +4,23 @@ import (
 	"net/http"
 	"strconv"
 	"wongnok-api/internal/data"
+	"wongnok-api/internal/model/dto"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
+	// handler เรียกใช้ service ในการจัดการตรรกะทางธุรกิจ จากนั้น service จะเรียกใช้ repository ในการจัดการข้อมูล
 	// สร้าง struct สำหรับจัดการ food recipes
+	Service Service
 }
 
-func NewHandler() Handler {
-	return Handler{}
+// NewHandler สร้างอินสแตนซ์ใหม่ของ Handler โดยรับพารามิเตอร์เป็นการเชื่อมต่อฐานข้อมูล
+func NewHandler(db *gorm.DB) Handler {
+	return Handler{
+		Service: NewService(db), // สร้าง service ใหม่โดยส่งการเชื่อมต่อฐานข้อมูลไปให้
+	}
 }
 
 // /food-recipes
@@ -57,7 +64,7 @@ func (handler Handler) GetByID(ctx *gin.Context) {
 
 // POST /food-recipes
 func (handler Handler) Create(ctx *gin.Context) {
-	var request gin.H
+	var request dto.FoodRecipeCreateRequest // สร้าง struct สำหรับรับข้อมูลจาก client
 
 	// ดึงข้อมูลจาก body ที่ส่งมาเก็บในตัวแปร request (&request คือการส่ง address ของตัวแปร request ไป request ข้างในเปลี่ยน request ข้างนอกจะเปลี่ยนตาม)
 	if err := ctx.BindJSON(&request); err != nil {
@@ -65,18 +72,12 @@ func (handler Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var lastID int64
-	// หา id ล่าสุดใน data.Recipes (internal/data/recipe.go)
-	for id := range data.Recipes {
-		lastID = id
+	recipe, err := handler.Service.Create(request) // เรียกใช้ service เพื่อสร้าง recipe ใหม่
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	// สร้าง id ใหม่
-	lastID++
-	request["id"] = lastID
-	// เพิ่ม recipe ใหม่เข้าไปใน data.Recipes (internal/data/recipe.go)
-	data.Recipes[lastID] = request
-
-	// ส่ง response กลับไปที่ client
-	ctx.JSON(http.StatusCreated, request)
+	// ส่งข้อมูล recipe ที่ถูกสร้างขึ้นกลับไปยัง client
+	ctx.JSON(http.StatusCreated, recipe)
 }
